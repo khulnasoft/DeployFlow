@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  app:
+    image: khulnasoft/deployflow
+    environment:
+      APPRISE_SIDECAR_URL: notify:5000
+      TZ: 'US/Eastern'
+      SLEEP_TIME: '5m'
+      FILTER_SERVICES: ''
+      VERBOSE: 'true'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - notification
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  notify:
+    image: mazzolino/apprise-microservice:0.1
+    environment:
+      NOTIFICATION_URLS: mailtos://user:pass@domain/?to=target@example.com
+    networks:
+      - notification
+
+networks:
+  notification:
