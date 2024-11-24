@@ -11,7 +11,6 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -87,15 +86,12 @@ jobs:
       - name: Sign the published Docker image
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: >
-          echo "${{ steps.meta.outputs.tags }}" | xargs -I {}
-          cosign sign --yes {}@${{ steps.build-and-push.outputs.digest }}
+        run: |
+          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign --yes {}@${{ steps.build-and-push.outputs.digest }}
 
       - name: Verify the signature of the published Docker image
         env:
           IDENTITY: "https://github.com/khulnasoft/deployflow/.github/workflows/release.yml@.*"
-          OIDC_ISSUER: https://token.actions.githubusercontent.com
-        run: >
-          echo "${{ steps.meta.outputs.tags }}" | xargs -I {}
-          cosign verify {}@${{ steps.build-and-push.outputs.digest }}
-          --certificate-identity-regexp=$IDENTITY --certificate-oidc-issuer=$OIDC_ISSUER
+          OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+        run: |
+          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign verify {}@${{ steps.build-and-push.outputs.digest }} --certificate-identity-regexp=$IDENTITY --certificate-oidc-issuer=$OIDC_ISSUER
